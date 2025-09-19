@@ -1,0 +1,10 @@
+#渲染精度
+renderScale: 100
+#是否开启检测到默认配置文件更新自动合并用户配置文件
+autoMaegeCfg: true
+
+sese: false
+sesepro: false
+
+# 检测到github链接自动发送缩略图
+githubAssetsImg: true

@@ -1,0 +1,365 @@
+{{extend defaultLayout}}
+
+{{block 'css'}}
+<!-- 引入页面 CSS 样式 -->
+<link rel="stylesheet" href="{{_res_path}}state/css/index.css">
+<script src="{{_res_path}}state/js/modules/echarts.min.js"></script>
+<style>
+    /* 整体容器背景图 */
+    .container {
+        background-image: url({{style.backdrop}});
+    }
+
+    /* 头部信息样式 */
+    .head-box {
+        margin-top: 0;
+    }
+
+    /* 可根据需要在此处加入更多自定义样式 */
+</style>
+{{/block}}
+
+{{block 'main'}}
+<script>
+    // 后端数据
+    var chartData = JSON.parse(`{{@chartData}}`); // 图表数据
+    var Config = JSON.parse(`{{@Config}}`);       // 配置数据
+    var _res_path = `{{_res_path}}`;             // 静态资源路径
+
+    // 格式化字节单位
+    var formatByte = (num = 1) => {
+        return (value) => {
+            value = value?.value ?? value;
+            let units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let unitIndex = 0;
+            while (value >= 1024 && unitIndex < units.length - 1) {
+                value /= 1024;
+                unitIndex++;
+            }
+            return value.toFixed(num) + units[unitIndex];
+        }
+    }
+
+    // 公共 ECharts 配置
+    var publicOption = {
+        animation: false,
+        textStyle: {
+            fontFamily: 'FZB, Number, "汉仪文黑-65W", YS, PingFangSC-Medium, "PingFang SC", sans-serif'
+        },
+        legend: {},
+        color: ["#2ec7c9", "#b6a2de"],
+        grid: { left: '1%', right: '5%', bottom: '0', containLabel: true },
+        xAxis: [{ type: 'time' }],
+        yAxis: [{ type: 'value', axisLabel: { formatter: formatByte() } }],
+    };
+</script>
+
+<!-- ========================== Bot 状态列表 ========================== -->
+{{each BotStatusList}}
+<div class="box">
+    <div class="botInfo">
+        <div class="avatar-box">
+            <div class="avatar" style="
+                --avatar-similar-color1: {{$value.avatar?.similarColor1}};
+                --avatar-similar-color2: {{$value.avatar?.similarColor2}};
+            ">
+                <img src="{{$value.avatar?.path}}">
+            </div>
+            <div class="info">
+                <div class="onlineStatus">
+                    <img src="{{_res_path}}state/icon/{{$value.status}}.png">
+                </div>
+                <div class="platform">{{$value.platform}}</div>
+            </div>
+        </div>
+        <div class="header">
+            <h1>{{$value.nickname}}</h1>
+            <hr noshade>
+            <p>
+                <span style="background: #d799de">{{$value.botVersion}}</span>
+                <span style="background: #CBC7C8">Bot已运行 {{$value.botRunTime}}</span>
+            </p>
+            <p>
+                {{each $value.countContacts v i}}
+                {{if v}}
+                <span><img src="{{_res_path}}state/icon/{{i}}.png">{{v}}</span>
+                {{/if}}
+                {{/each}}
+                {{each $value.messageCount v i}}
+                {{if v}}
+                <span><img src="{{_res_path}}state/icon/{{i}}.png">{{v}}</span>
+                {{/if}}
+                {{/each}}
+            </p>
+        </div>
+    </div>
+</div>
+{{/each}}
+
+<!-- ========================== 主硬件状态 ========================== -->
+<div class="box" data-boxInfo="主硬件">
+    <div class="time">{{time}} {{isPro ? '状态Pro' : ''}}</div>
+    <ul class="mainHardware">
+        {{each visualData group i}}
+        <li class="li">
+            <div class="container-box" data-num="{{group.inner}}" id="box">
+                <div class="circle-outer"></div>
+                <svg>
+                    <defs>
+                        <radialGradient id="gradient{{i}}" cx="50%" cy="50%" r="60%" fx="50%" fy="50%">
+                            <stop offset="30%" stop-color="var({{group.color}}-dark)" />
+                            <stop offset="100%" stop-color="var({{group.color}}-light)" />
+                        </radialGradient>
+                    </defs>
+                    {{if group.title == "RAM" && group?.buffcache?.isBuff}}
+                    <circle id="circle" stroke="{{group.buffcache?.percentage?.color}}" style="stroke-dashoffset:{{group.buffcache?.percentage?.per}}"></circle>
+                    {{/if}}
+                    <circle id="circle" stroke="{{group.percentage.color}}" style="stroke-dashoffset:{{group.percentage.per}}"></circle>
+                </svg>
+            </div>
+            <article>
+                <summary>{{group.title}}</summary>
+                {{if group.detailed}}
+                <div class="detailed">{{group.detailed}}</div>
+                {{/if}}
+                {{each group.info info}}
+                <p>{{info}}</p>
+                {{/each}}
+            </article>
+        </li>
+        {{/each}}
+    </ul>
+</div>
+
+<!-- ========================== 磁盘信息 ========================== -->
+{{if disks.disksSize}}
+<div class="box memory" data-boxInfo="磁盘">
+    <ul>
+        {{each disks.disksSize}}
+        <li class="HardDisk_li">
+            <div class="word mount">{{$value.mount}}</div>
+            <div class="progress">
+                <div class="word">{{$value.used}} / {{$value.size}}</div>
+                <div class="current" style="width:{{$value.use}}%;background:{{$value.color}}"></div>
+            </div>
+            <div class="percentage">{{$value.use}}%</div>
+        </li>
+        {{/each}}
+    </ul>
+    {{if disks.disksIo}}
+    {{each disks.disksIo}}
+    <div class="speed">
+        <p>{{$value.name}}</p>
+        <p>读 {{$value.rIO_sec}}/s | 写 {{$value.wIO_sec}}/s</p>
+    </div>
+    {{/each}}
+    {{/if}}
+</div>
+{{/if}}
+
+
+
+<!-- ========================== Redis / 网络 / 进程 / 其他信息 ========================== -->
+{{if redis}}
+<div class="box" data-boxInfo="redis">
+    <!-- 内存和状态信息 -->
+    <div class="info">
+        <div class="mem redisBox">
+            <div class="title"><img src="{{_res_path}}state/icon/内存.png" class="icon">内存</div>
+            <div class="data">
+                <div class="item">已用内存: <span class="number">{{redis.used_memory_human}}</span></div>
+                <div class="item">内存占用峰值: <span class="number">{{redis.used_memory_peak_human}}</span></div>
+                <div class="item">Lua占用内存: <span class="number">{{redis.used_memory_lua_human}}</span></div>
+            </div>
+        </div>
+        <div class="stats redisBox">
+            <div class="title"><img src="{{_res_path}}state/icon/温度计.png" class="icon">状态</div>
+            <div class="data">
+                <div class="item">客户端连接数: <span class="number">{{redis.connected_clients}}</span></div>
+                <div class="item">历史连接数: <span class="number">{{redis.total_connections_received}}</span></div>
+                <div class="item">历史命令数: <span class="number">{{redis.total_commands_processed}}</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- 键值统计 -->
+    <div class="keyspace">
+        <div class="title"><img src="{{_res_path}}state/icon/统计图.png" class="icon">键值统计</div>
+        <div class="data">
+            <div class="row header-row"><div class="cell">DB</div><div class="cell">Keys</div><div class="cell">Expires</div><div class="cell">Avg ttl</div></div>
+            {{each redis.Keyspace v k}}
+            <div class="row"><div class="cell">{{k}}</div><div class="cell">{{v.keys}}</div><div class="cell">{{v.expires}}</div><div class="cell">{{v.avg_ttl}}</div></div>
+            {{/each}}
+        </div>
+    </div>
+</div>
+{{/if}}
+
+{{if network.speed || network.psTest}}
+<div class="box" data-boxInfo="网络">
+    {{if network.speed}}
+        {{each network.speed}}
+        <div class="speed"><p>{{$value.first}}</p><p>{{@$value.tail}}</p></div>
+        {{/each}}
+    {{/if}}
+    {{if network.speed && network.psTest}}<hr style="margin:5px 0" />{{/if}}
+    {{if network.psTest}}
+        {{each network.psTest}}
+        <div class="speed"><p>{{$value.first}}</p><p>{{@$value.tail}}</p></div>
+        {{/each}}
+    {{/if}}
+</div>
+{{/if}}
+
+{{if processLoad}}
+<div class="box" data-boxInfo="进程负载">
+    <div class="info">
+        <div class="title"><img src="{{_res_path}}state/icon/进程信息.png" class="icon">进程信息</div>
+        <div class="list">
+            <div>全部: <span style="color:#333;">{{processLoad.all}}</span></div>
+            <div>运行中: <span style="color:#54ad57;">{{processLoad.running}}</span></div>
+            <div>阻塞: <span style="color:#cc8823;">{{processLoad.blocked}}</span></div>
+            <div>休眠: <span style="color:#3698e8;">{{processLoad.sleeping}}</span></div>
+            <div>未知: <span style="color:#e54c41;">{{processLoad.unknown}}</span></div>
+        </div>
+    </div>
+    <div class="process">
+        <div class="title"><img src="{{_res_path}}state/icon/进程列表.png" class="icon">进程列表</div>
+        <div class="form">
+            <div class="row header-row"><div class="cell">Name</div><div class="cell">Pid</div><div class="cell">CPU</div><div class="cell">MEM</div></div>
+            {{each processLoad.list v}}
+            {{if v === "hr"}}<hr style="margin:5px 0" />{{else}}
+            <div class="row"><div class="cell">{{v.name}}</div>{{if v.pid !== false}}<div class="cell">{{v.pid}}</div>{{/if}}<div class="cell">{{v.cpu}}</div><div class="cell">{{v.mem}}</div></div>
+            {{/if}}
+            {{/each}}
+        </div>
+    </div>
+</div>
+{{/if}}
+
+{{if otherInfo}}
+<div class="box" data-boxInfo="其他">
+    {{each otherInfo}}
+    <div class="speed"><p>{{$value.first}}</p><p>{{@$value.tail}}</p></div>
+    {{/each}}
+    {{if redis}}<div class="speed"><p>redis运行</p><p>{{redis.uptime}}</p></div>{{/if}}
+</div>
+{{/if}}
+
+<!-- CPU -->
+<div class="box">
+    <div class="head-box">
+        <div class="title">椰奶监控</div>
+        <div class="label">CPU / RAM / Network / DisksIO</div>
+    </div>
+    <div id="cpu" style="height: 200px;"></div>
+    <script>
+        let cpuElement = document.getElementById("cpu");
+        if (!chartData.cpu?.length) cpuElement.parentNode.remove();
+        const cpuChart = echarts.init(cpuElement, 'westeros', { renderer: 'svg' });
+        cpuChart.setOption({...publicOption, title: { text: 'CPU' }, legend: { show: false }, yAxis: [{ type: 'value', axisLabel: { formatter: v => v.toFixed(1)+'%' } }], series: [{ name: 'CPU', type: 'line', areaStyle:{}, smooth:true, markPoint:{data:[{type:'max',name:'Max',label:{formatter:v=>v.value.toFixed(1)+'%'}}]}, data: chartData.cpu }]});
+    </script>
+</div>
+
+<!-- RAM -->
+<div class="box">
+    <div id="ram" style="height: 200px;"></div>
+    <script>
+        let ramElement = document.getElementById("ram");
+        if (!chartData.ram?.length) ramElement.parentNode.remove();
+        const ramChart = echarts.init(ramElement, 'westeros', { renderer: 'svg' });
+        ramChart.setOption({...publicOption, title:{text:'RAM'}, legend:{show:false}, series:[{name:'RAM',type:'line',areaStyle:{},stack:'total',smooth:true,markPoint:{data:[{type:'max',name:'Max',label:{formatter:formatByte()}}]},data:chartData.ram}]});
+    </script>
+</div>
+
+<!-- Network -->
+<div class="box">
+    <div id="network" style="height: 200px;"></div>
+    <script>
+        let { upload=[], download=[] } = chartData.network||{};
+        let networkElement = document.getElementById("network");
+        if (!upload.length && !download.length) networkElement.parentNode.remove();
+        const networkChart = echarts.init(networkElement, 'westeros', { renderer:'svg' });
+        networkChart.setOption({...publicOption, title:{text:'Network'}, series:[
+            { name:'上行', type:'line', areaStyle:{}, showSymbol:false, smooth:true, markPoint:{data:[{type:'max',name:'Max',label:{formatter:formatByte()}}]}, data:upload },
+            { name:'下行', type:'line', areaStyle:{}, showSymbol:false, smooth:true, emphasis:{focus:'series'}, markPoint:{data:[{type:'max',name:'Max',label:{formatter:formatByte()}}]}, data:download }
+        ]});
+    </script>
+</div>
+
+<!-- DisksIO -->
+<div class="box">
+    <div id="disksIO" style="height: 200px;"></div>
+    <script>
+        let { readSpeed=[], writeSpeed=[] } = chartData.disksIO||{};
+        let disksIOElement = document.getElementById("disksIO");
+        if (!readSpeed.length && !writeSpeed.length) disksIOElement.parentNode.remove();
+        const disksIOChart = echarts.init(disksIOElement, 'westeros', { renderer:'svg' });
+        disksIOChart.setOption({...publicOption, title:{text:'disksIO'}, series:[
+            { name:'读', type:'line', areaStyle:{}, showSymbol:false, smooth:true, markPoint:{data:[{type:'max',name:'Max',label:{formatter:formatByte()}}]}, data:readSpeed },
+            { name:'写', type:'line', areaStyle:{}, showSymbol:false, smooth:true, emphasis:{focus:'series'}, markPoint:{data:[{type:'max',name:'Max',label:{formatter:formatByte()}}]}, data:writeSpeed }
+        ]});
+    </script>
+</div>
+
+
+<!-- 自定义 -->
+{{if tj && tj.messageStats && tj.messageStats.length}}
+<div class="box" data-boxInfo="消息统计">
+  {{each tj.messageStats as stat i}}
+    <div class="statBlock">
+      <div class="statTitle">{{stat.text}}</div>
+      <div class="statList">
+        {{each stat.stats as item j}}
+        <div class="statItem">
+          <div class="statDate">{{item.date}}</div>
+          <div class="statNumbers">
+            <span class="receive">{{item.receive}}</span> /
+            <span class="send">{{item.send}}</span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+  {{/each}}
+</div>
+{{else}}
+<div class="box" data-boxInfo="消息统计">
+  <p>暂无消息统计数据</p>
+</div>
+{{/if}}
+
+
+
+
+<div class="box" data-boxInfo="插件加载">
+    {{if tj.pluginTimes && tj.pluginTimes.length}}
+      <div class="pluginList">
+        {{each tj.pluginTimes as item i}}
+        <div class="pluginItem">
+          <div class="pluginName">
+            <div class="pluginPath">{{item.path}}</div>
+            <div class="pluginFile">{{item.file}}</div>
+          </div>
+          <div class="pluginTime">{{item.time}} ms</div>
+        </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <p>暂无插件加载数据</p>
+    {{/if}}
+  </div>
+  
+  
+
+
+  
+
+  
+
+
+
+<!-- FastFetch 输出 -->
+{{@FastFetch}}
+
+<script src="{{_res_path}}state/js/style.js"></script>
+{{/block}}
