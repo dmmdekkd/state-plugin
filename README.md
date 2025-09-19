@@ -2,7 +2,7 @@
 
 ## 安装
 
-### 方式一：通过 Gitee 克隆
+### 方式一：通过 Github 克隆
 
 ```bash
 git clone --depth=1 https://github.com/dmmdekkd/state-plugin.git ./plugins/state-plugin
