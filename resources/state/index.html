@@ -344,7 +344,6 @@
     {{if tj.pluginTimes && tj.pluginTimes.list && tj.pluginTimes.list.length}}
       <div class="pluginList">
         {{each tj.pluginTimes.list item i}}
-          <!-- 插件加载时间颜色根据 timeClass -->
           <div class="pluginItem">
             <div class="pluginName">
               <div class="pluginPath">{{item.path}}</div>
@@ -361,6 +360,77 @@
     {{/if}}
   </div>
   
+
+  
+<div class="box" data-boxInfo="插件加载">
+  <div class="boxHeader">
+    插件加载
+  </div>
+
+  {{if tj.pluginTimes && tj.pluginTimes.list && tj.pluginTimes.list.length}}
+    <!-- 饼状图容器 -->
+    <div id="pluginPie" style="width: 100%; height: 400px;"></div>
+  {{else}}
+    <p>暂无插件加载详细数据</p>
+  {{/if}}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+<script>
+  {{if tj.pluginTimes && tj.pluginTimes.list && tj.pluginTimes.list.length}}
+    // 构造饼状图数据
+    var pluginTimes = [];
+    {{each tj.pluginTimes.list item i}}
+      pluginTimes.push({
+        name: '{{item.file || item.path}}',
+        value: {{item.time || 0}}
+      });
+    {{/each}}
+
+    var chartDom = document.getElementById('pluginPie');
+    var myChart = echarts.init(chartDom);
+
+    var option = {
+      title: {
+        text: '插件加载分布',
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b}: {c} ms ({d}%)'
+      },
+      // legend 删除
+      series: [
+        {
+          name: '插件加载时间',
+          type: 'pie',
+          radius: ['0%', '50%'],
+          center: ['50%', '50%'],
+          data: pluginTimes,
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          },
+          label: {
+            formatter: '{b}\n{c} ms',
+            color: '#333',          // 文字颜色
+            fontSize: 12,
+            fontWeight: 'normal',
+            textBorderColor: 'transparent', // 去掉描边
+            lineHeight: 18
+          }
+        }
+      ]
+    };
+
+    myChart.setOption(option);
+    window.addEventListener('resize', () => myChart.resize());
+  {{/if}}
+</script>
+
   
   
   

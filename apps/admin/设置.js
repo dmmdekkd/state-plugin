@@ -20,17 +20,17 @@ const indexCfgTypeMap = {
 }
 
 // 支持 #椰奶设置状态前缀 新前缀
-const indexCfgReg = new RegExp(`^#椰奶设置(${Object.keys(indexCfgTypeMap).join("|")}|前缀)(开启|关闭|(\\d+)秒?|\\s.+)?$`)
+const indexCfgReg = new RegExp(`^#状态设置(${Object.keys(indexCfgTypeMap).join("|")}|前缀)(开启|关闭|(\\d+)秒?|\\s.+)?$`)
 
 export class Admin_Index extends plugin {
   constructor() {
     super({
-      name: "椰奶配置-index",
+      name: "状态配置-index",
       event: "message",
       priority: 100,
       rule: [
         { reg: indexCfgReg, fnc: "indexSet" },
-        { reg: "^#椰奶设置$", fnc: "sendImg" }
+        { reg: "^#状态设置$", fnc: "sendImg" }
       ]
     })
   }

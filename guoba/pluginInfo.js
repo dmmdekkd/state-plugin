@@ -3,9 +3,9 @@ import { Plugin_Path } from "../components/index.js"
 export default {
   name: "state-plugin",
   title: "state-plugin",
-  author: "@yeyang52",
-  authorLink: "https://gitee.com/yeyang52",
-  link: "https://gitee.com/yeyang52/state-plugin",
+  author: "@dmmdekkd",
+  authorLink: "https://gitee.com/dmmdekkd",
+  link: "https://gitee.com/dmmdekkd/state-plugin",
   isV3: true,
   isV2: false,
   description: "提供对Bot的一些便捷操作",
