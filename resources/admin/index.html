@@ -1,0 +1,38 @@
+{{extend defaultLayout}} {{block 'css'}}
+
+<link rel="stylesheet" type="text/css" href="{{_res_path}}/admin/index.css" />
+<style>
+    .container {
+        background: url("{{_res_path}}/admin/imgs/bg/{{bg}}") #000144 top !important;
+        background-size: cover !important;
+        width: 800px;
+    }
+</style>
+{{/block}} {{block 'main'}}
+
+<div class="info_box">
+    <div class="head-box type{{bgType}}">
+        <div class="label">{{label ?? "#椰奶设置"}}</div>
+        <div class="title">{{title ?? "椰奶管理面板"}}</div>
+    </div>
+</div>
+{{each list}}
+<div class="cfg-box  {{specialList?.includes?.($index)? "cfg-special":""}}">
+    <div class="cfg-group">{{$index}}</div>
+    {{each $value v k}}
+    <ul class="cfg-ul">
+        <li class="cfg-li">
+            <div class="cfg-line">
+                {{v.key}}
+                <span class="cfg-hint">{{v.hint}}</span>
+                {{@v.value}}
+            </div>
+            {{if v.desc}}
+            <div class="cfg-desc">{{v.desc}}</div>
+            {{/if}}
+        </li>
+    </ul>
+    {{/each}}
+</div>
+{{/each}}
+{{/block}}

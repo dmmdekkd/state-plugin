@@ -66,13 +66,6 @@ class Config {
     isUpdate && fs.writeFileSync(cfgPath, yaml, "utf8")
   }
 
-  getNotice(botId = "", groupId = "") {
-    const config = this.getDefOrConfig("notice")
-    const bot = `bot:${botId}`
-    const botGroup = `bot:${botId}:${groupId}`
-    return { ...config.default, ...config[groupId], ...config[bot], ...config[botGroup] }
-  }
-
   /** 主人QQ */
   get masterQQ() {
     return cfg.masterQQ

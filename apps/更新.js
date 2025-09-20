@@ -50,11 +50,9 @@ export class StateUpdatePlugin extends plugin {
         logger.mark(`[state-plugin] ${this.Plugin_Name} 更新完成，准备重启插件...`);
         setTimeout(() => updater.restart(), 1000); // 延迟 1 秒安全重启
       } else {
-        await this.e.reply('插件已经是最新版本，无需更新。');
       }
     } catch (err) {
       logger.error('state-plugin更新失败', err);
-      await this.e.reply('更新失败，请查看日志。');
     }
   }
 }

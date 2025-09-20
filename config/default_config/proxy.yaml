@@ -4,7 +4,7 @@ proxyAddress: http://127.0.0.1:7890
 switchProxy: false
 #代理黑名单，可以使用*和?通配符
 blacklist:
-    - "*.baidu.com"
+    - "*.bing.com"
 #代理白名单，在全局关闭的情况下可用
 whitelist:
     - "*.google.com"

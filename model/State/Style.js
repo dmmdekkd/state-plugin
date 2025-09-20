@@ -49,8 +49,8 @@ function arrayBufferToBase64(arrayBuffer) {
   return Buffer.from(arrayBuffer).toString("base64")
 }
 function getDefaultBackdrop(backdropDefault) {
-  const Plugin_Path = "../../../../../plugins/yenai-plugin"
-  const Bg_Path = "./plugins/yenai-plugin/resources/state/img/bg"
+  const Plugin_Path = "../../../../../plugins/state-plugin"
+  const Bg_Path = "./plugins/state-plugin/resources/state/img/bg"
   if (backdropDefault === "random") {
     backdropDefault = _.sample(fs.readdirSync(Bg_Path))
     logger.debug(`${Log_Prefix}[State] 使用随机背景图 “${backdropDefault}”`)

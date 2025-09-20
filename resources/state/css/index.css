@@ -490,31 +490,41 @@ hr {
 
 /*自定义*/
 
-/* 整个列表容器，横排排列并自动换行 */
+/* ====================== 外层容器 ====================== */
 .pluginList {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px; /* 每个插件项间距 */
+  gap: 14px;                 
+  justify-content: flex-start; 
 }
 
-/* 每个插件块 */
+/* ====================== 每个插件块 ====================== */
 .pluginItem {
-  display: flex;
-  flex-direction: column; /* 目录/文件名上下排列 */
-  justify-content: space-between;
-  width: 180px; /* 根据实际宽度调整 */
+  display: flex;              
+  flex-direction: row;
+  justify-content: space-between; 
+  align-items: flex-start;    
+
+  flex: 1 1 180px;            
+  min-width: 150px;
+  max-width: 220px;
+
   padding: 8px;
   background: rgba(255,255,255,0.45);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   font-size: 13px;
+  min-height: 50px;           
+  word-break: break-word;
+  gap: 10px;                  
 }
 
-/* 路径和文件名 */
+/* ====================== 路径和文件名 ====================== */
 .pluginName {
   display: flex;
-  flex-direction: column;
-  word-break: break-all; /* 防止路径太长溢出 */
+  flex-direction: column;     
+  flex: 1;                    
+  gap: 2px;                   
 }
 
 .pluginPath {
@@ -527,13 +537,31 @@ hr {
   color: #222;
 }
 
-/* 加载时间显示在右下角 */
+/* ====================== 加载时间 ====================== */
 .pluginTime {
   font-size: 12px;
-  color: #888;
-  margin-top: 6px;
+  flex-shrink: 0;             
   text-align: right;
+  align-self: flex-start;     
+  font-weight: 600;
+  padding: 0 4px;
+  border-radius: 4px;
 }
+
+.pluginTime.very-fast { color: #46971d; } /* 非常快 */
+.pluginTime.fast      { color: #82c91e; } /* 快 */
+.pluginTime.medium    { color: #e6a23c; } /* 中等 */
+.pluginTime.slow      { color: #f08c00; } /* 慢 */
+.pluginTime.very-slow { color: #d73403; } /* 很慢 */
+
+.boxHeader {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-left: 10px; /* 缩进10px */
+  color: #333;
+}
+
 
 
 
@@ -545,6 +573,18 @@ hr {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: flex-start; 
+}
+
+/* 头部 */
+.boxHeader {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px; 
+  color: #222;
+  text-align: left;
+  width: 100%;         /* 占满容器宽度 */
+  padding-left: 8px;   /* 与statBlock内边距一致 */
 }
 
 /* 默认横排宽度，每行 3 个 */
@@ -590,3 +630,5 @@ hr {
 .statNumbers { color: #333; font-weight: 600; }
 .statNumbers .receive { color: #46971d; }
 .statNumbers .send { color: #d73403; }
+
+

@@ -3,7 +3,7 @@ import fs from "fs"
 import path from "path"
 
 const _path = process.cwd()
-const plugin = "yenai-plugin"
+const plugin = "state-plugin"
 const getRoot = (root = "") => {
   if (root === "root" || root === "yunzai") {
     root = `${_path}/`
@@ -118,7 +118,7 @@ let Data = {
     let sysCfg = await Data.importModule(`config/system/${key}_system.js`)
     let diyCfg = await Data.importModule(`config/${key}.js`)
     if (diyCfg.isSys) {
-      console.error(`yenai-plugin: config/${key}.js无效，已忽略`)
+      console.error(`state-plugin: config/${key}.js无效，已忽略`)
       console.error(`如需配置请复制config/${key}_default.js为config/${key}.js，请勿复制config/system下的系统文件`)
       diyCfg = {}
     }

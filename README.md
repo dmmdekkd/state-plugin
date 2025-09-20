@@ -13,3 +13,17 @@ git clone --depth=1 https://github.com/dmmdekkd/state-plugin.git ./plugins/state
 ```bash
 git clone --depth=1 https://gitee.com/qianzhi11_admin/state-plugin.git ./plugins/state-plugin
 ```
+
+## 安装依赖
+
+```bash
+cd ./plugins/state-plugin
+pnpm install
+
+```
+
+## 一键安装
+
+```bash
+git clone --depth=1 https://gitee.com/qianzhi11_admin/state-plugin.git ./plugins/state-plugin && cd ./plugins/state-plugin && pnpm install 
+```

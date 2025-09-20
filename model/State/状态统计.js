@@ -18,7 +18,7 @@ class StatusPlugin extends plugin {
     try {
       const basicInfo = await this.getBasicInfo()
       const botTimes = await this.getBotTimeJson()
-      const pluginTimes = await this.getPluginTimeJson()
+      const pluginTimes = await this.getPluginTimeJsonForTemplate()
       const messageStats = await this.getCountJsonSafe()
       return { basicInfo, botTimes, pluginTimes, messageStats }
     } catch (err) {
@@ -51,29 +51,42 @@ class StatusPlugin extends plugin {
     return arr
   }
 
-  /** 插件加载用时（JSON） */
-  async getPluginTimeJson() {
+  /** 插件加载用时（JSON）- 适配模板 */
+  async getPluginTimeJsonForTemplate() {
     const arr = []
     const loadTime = PluginsLoader.load_time || {}
+
     for (const name in loadTime) {
-      const parts = name.split('/') // 拆分路径
-      const path = parts.slice(0, -1).join('/') // 目录部分
-      const file = parts.slice(-1)[0]            // 文件名部分
+      const parts = name.split('/')
+      const path = parts.slice(0, -1).join('/')
+      const file = parts.slice(-1)[0]
+      const time = loadTime[name]
+
+      // 根据加载时间生成 class
+      let timeClass = ''
+      if (time < 200) timeClass = 'very-fast'
+      else if (time < 500) timeClass = 'fast'
+      else if (time < 1000) timeClass = 'medium'
+      else if (time < 1500) timeClass = 'slow'
+      else timeClass = 'very-slow'
+
       arr.push({
         fullName: name,
         path,
         file,
-        time: loadTime[name]
+        time,
+        timeClass // 预计算 class，模板直接用 {{$item.timeClass}}
       })
     }
-    return arr
-  }
-  
 
-async getCountJsonSafe(cmd = {}) {
+    return { list: arr } // 模板要求有 list
+  }
+
+  /** 消息统计 */
+  async getCountJsonSafe(cmd = {}) {
     try {
-      // --- 日期处理 ---
       const dateArray = []
+
       if (cmd["日期"]) {
         const raw = cmd["日期"].replace(/[^\d]/g, "")
         switch (raw.length) {
@@ -97,57 +110,48 @@ async getCountJsonSafe(cmd = {}) {
         }
         dateArray.push([d.format("YYYY"), d.format("MM")], [d.format("YYYY")], ["total"])
       }
-  
-      // --- 消息名称 ---
+
       const msgName = cmd["消息"] || "msg"
-  
-      // --- 构建目标数组（默认全局添加机器人/用户/群） ---
       const array = []
-  
-      // 1. cmd 里指定的优先添加
+
       if (cmd["机器人"]) array.push({ text: "机器人", key: `bot`, id: cmd["机器人"], type: 'bot' })
       if (cmd["用户"]) array.push({ text: "用户", key: `user`, id: cmd["用户"], type: 'user' })
       if (cmd["群"]) array.push({ text: "群", key: `group`, id: cmd["群"], type: 'group' })
-  
-      // 2. 默认全局添加
+
       if (!array.find(i => i.type === 'bot') && this.e?.self_id)
         array.push({ text: "机器人", key: `bot`, id: this.e.self_id, type: 'bot' })
       if (!array.find(i => i.type === 'user') && this.e?.user_id)
         array.push({ text: "用户", key: `user`, id: this.e.user_id, type: 'user' })
       if (!array.find(i => i.type === 'group') && this.e?.group_id)
         array.push({ text: "群", key: `group`, id: this.e.group_id, type: 'group' })
-  
-      // 3. 默认统计总计 / 用户量 / 群量
+
       array.push(
-        { text: `${msgName} 消息统计`, key: "total" },
+        { text: `消息统计`, key: "total" },
         { type: "keys", text: "用户量", key: "user:*" },
         { type: "keys", text: "群量", key: "group:*" }
       )
-  
-      // --- 获取 Redis 数据 ---
+
       const result = []
       for (const target of array) {
         if (target.id) target.key += `:${target.id}`
-  
+
         const record = { text: target.text, key: target.key, id: target.id || null, stats: [] }
         for (const d of dateArray) {
           let dateStr = d.join("-")
           if (dateStr === "total") dateStr = "总计"
-  
+
           const key = `:${msgName}:${target.key}:${d.join(":")}`
           const redisData = await this.redisSafe(target.type, key)
           record.stats.push({ date: dateStr, receive: redisData.receive, send: redisData.send })
         }
         result.push(record)
       }
-  
+
       return result
     } catch (err) {
       return { error: err.message }
     }
   }
-  
-  
 
   /** Redis 安全获取 */
   async redisSafe(type, key) {

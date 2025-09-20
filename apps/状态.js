@@ -3,60 +3,49 @@ import { getMonitorData, getData } from "../model/State/index.js"
 import { puppeteer } from "../model/index.js"
 
 let interval = false
+
 export class NewState extends plugin {
   constructor() {
+    const keyword = Config.state.keyword || "椰奶"
+    const stateReg = new RegExp(`^#?(${keyword})?状态(pro)?(debug)?$`)
+    
     super({
       name: "椰奶状态",
       event: "message",
       priority: -114514,
       rule: [
-        {
-          reg: "^#?(椰奶)?状态(pro)?(debug)?$",
-          fnc: "state"
-        },
-        {
-          reg: "^#椰奶监控$",
-          fnc: "monitor"
-        },
-        {
-          reg: "^#?原图$",
-          fnc: "origImg"
-        }
+        { reg: stateReg, fnc: "state" },//  reg: "^#?(椰奶)?状态(pro)?(debug)?$",
+        { reg: "^#椰奶监控$", fnc: "monitor" },
+        { reg: "^#?原图酱$", fnc: "origImg" }
       ]
-
     })
+
     this.redisOrigImgKey = "yenai:state:origImg:"
+  }
+
+  /** 获取最新关键字正则 */
+  getStateReg() {
+    const keyword = Config.state.keyword || "椰奶"
+    return new RegExp(`^#?(${keyword})?状态(pro)?(debug)?$`)
   }
 
   async monitor(e) {
     const data = await getMonitorData()
-    await puppeteer.render("state/monitor", data, {
-      e,
-      scale: 1.4
-    })
+    await puppeteer.render("state/monitor", data, { e, scale: 1.4 })
   }
 
   async state(e) {
-    if (!/椰奶/.test(e.msg) && !Config.state.defaultState) return false
+    const stateReg = this.getStateReg() // 每次动态获取最新关键字
+    if (!stateReg.test(e.msg) && !Config.state.defaultState) return false
     if (e.msg.includes("pro") && Config.state.noPro) return false
 
-    // 防止多次触发
-    if (interval) { return false } else interval = true
+    if (interval) return false
+    interval = true
     try {
-      // 获取数据
-      let data = await getData(e)
-      //logger.mark("[NewState][state] data.tj.pluginTimes:", data.tj.getCountJsonSafe)
-      // 渲染图片
-      let retMsgId = await puppeteer.render("state/index", data, {
-        e,
-        scale: 1.4,
-        retMsgId: true
-      })
+      const data = await getData(e)
+      const retMsgId = await puppeteer.render("state/index", data, { e, scale: 1.4, retMsgId: true })
 
-      // redis保存消息id
-      if (retMsgId) {
-        this._saveMsgId(e, retMsgId, data)
-      }
+      if (retMsgId) this._saveMsgId(e, retMsgId, data)
     } catch (error) {
       logger.error(error)
     } finally {
@@ -81,11 +70,9 @@ export class NewState extends plugin {
   _saveMsgId(e, retMsgId, data) {
     const redisData = data.style.backdrop
     const message_id = [ e.message_id ]
-    if (Array.isArray(retMsgId.message_id)) {
-      message_id.push(...retMsgId.message_id)
-    } else {
-      message_id.push(retMsgId.message_id)
-    }
+    if (Array.isArray(retMsgId.message_id)) message_id.push(...retMsgId.message_id)
+    else message_id.push(retMsgId.message_id)
+
     for (const i of message_id) {
       redis.set(this.redisOrigImgKey + i, this._handleImgData(redisData), { EX: 60 * 60 * 2 })
     }

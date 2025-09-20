@@ -1,5 +1,5 @@
 {
-  "name": "yenai-plugin",
+  "name": "state-plugin",
   "version": "2.0.0",
   "description": "Yunzai-Bot插件扩展",
   "main": "index.js",
@@ -13,11 +13,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/yeyang52/yenai-plugin.git"
+    "url": "https://gitee.com/dmmdekkd/state-plugin.git"
   },
   "keywords": [
     "Yunzai-Bot",
-    "yenai-plugin"
+    "state-plugin"
   ],
   "author": "yeyang",
   "license": "GPL-3.0",
@@ -26,7 +26,8 @@
     "form-data": "^4.0.1",
     "jimp": "^0.22.12",
     "node-fetch": "^3.3.2",
-    "systeminformation": "^5.23.5"
+    "systeminformation": "^5.23.5",
+    "sharp": "^0.32.0"
   },
   "devDependencies": {
     "eslint": "^8.57.1",
@@ -35,6 +36,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jsdoc": "^48.11.0",
     "eslint-plugin-n": "^17.17.0",
+    "sharp": "^0.32.0",
     "eslint-plugin-promise": "^6.6.0"
   }
 }

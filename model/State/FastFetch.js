@@ -44,7 +44,7 @@ async function directlyGetFastFetch() {
 }
 
 async function bashGetFastFetch() {
-  let { stdout } = await execAsync("bash plugins/yenai-plugin/resources/state/state.sh")
+  let { stdout } = await execAsync("bash plugins/state-plugin/resources/state/state.sh")
   return stdout.trim()
 }
 function _printInfo(input) {

@@ -15,6 +15,7 @@
         margin-top: 0;
     }
 
+    
     /* 可根据需要在此处加入更多自定义样式 */
 </style>
 {{/block}}
@@ -98,7 +99,10 @@
 
 <!-- ========================== 主硬件状态 ========================== -->
 <div class="box" data-boxInfo="主硬件">
-    <div class="time">{{time}} {{isPro ? '状态Pro' : ''}}</div>
+    <div class="time">
+        {{time}} {{isPro ? '状态Pro' : ''}} | Bot总数: {{BotStatusList ? BotStatusList.length : 0}}
+    </div>
+    
     <ul class="mainHardware">
         {{each visualData group i}}
         <li class="li">
@@ -305,11 +309,12 @@
 <!-- 自定义 -->
 {{if tj && tj.messageStats && tj.messageStats.length}}
 <div class="box" data-boxInfo="消息统计">
-  {{each tj.messageStats as stat i}}
+    <div class="boxHeader">消息统计</div>
+  {{each tj.messageStats stat i}}
     <div class="statBlock">
       <div class="statTitle">{{stat.text}}</div>
       <div class="statList">
-        {{each stat.stats as item j}}
+        {{each stat.stats item j}}
         <div class="statItem">
           <div class="statDate">{{item.date}}</div>
           <div class="statNumbers">
@@ -332,22 +337,32 @@
 
 
 <div class="box" data-boxInfo="插件加载">
-    {{if tj.pluginTimes && tj.pluginTimes.length}}
+    <div class="boxHeader">
+      插件加载
+    </div>
+  
+    {{if tj.pluginTimes && tj.pluginTimes.list && tj.pluginTimes.list.length}}
       <div class="pluginList">
-        {{each tj.pluginTimes as item i}}
-        <div class="pluginItem">
-          <div class="pluginName">
-            <div class="pluginPath">{{item.path}}</div>
-            <div class="pluginFile">{{item.file}}</div>
+        {{each tj.pluginTimes.list item i}}
+          <!-- 插件加载时间颜色根据 timeClass -->
+          <div class="pluginItem">
+            <div class="pluginName">
+              <div class="pluginPath">{{item.path}}</div>
+              <div class="pluginFile">{{item.file}}</div>
+            </div>
+            <div class="pluginTime {{item.timeClass}}">
+              {{item.time}} ms
+            </div>
           </div>
-          <div class="pluginTime">{{item.time}} ms</div>
-        </div>
         {{/each}}
       </div>
     {{else}}
-      <p>暂无插件加载数据</p>
+      <p>暂无插件加载详细数据</p>
     {{/if}}
   </div>
+  
+  
+  
   
   
 

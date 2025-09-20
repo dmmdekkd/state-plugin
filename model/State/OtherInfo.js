@@ -76,7 +76,7 @@ function getPluginNum(e) {
 
 export async function getCopyright() {
   const { node, v8, git, redis } = await si.versions("node,v8,git,redis")
-  let v = `Created By ${Version.name}<span class="version">${Version.yunzai}</span> & Yenai-Plugin<span class="version">v${Version.ver}</span>`
+  let v = `Created By ${Version.name}<span class="version">${Version.yunzai}</span> & state-plugin<span class="version">v${Version.ver}</span>`
   v += "<br>"
   v += `Node <span class="version">v${node}</span> & V8 <span class="version">v${v8}</span>`
   if (git) {
