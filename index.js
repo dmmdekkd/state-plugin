@@ -12,16 +12,6 @@ global.ReplyError = class ReplyError extends Error {
     this.name = "ReplyError"
   }
 }
-// 加载监听事件
-const eventsPath = "./plugins/state-plugin/apps/events"
-const events = Data.readDirRecursive(eventsPath, "js")
-Promise.all(events.map(async file => {
-  logger.debug(`${Log_Prefix} 加载监听事件：${file}`)
-  return import(`./apps/events/${file}`).catch(e => {
-    logger.error(`${Log_Prefix} 监听事件错误：${file}`)
-    logger.error(e)
-  })
-})).catch(err => logger.error(err))
 
 const appsPath = "./plugins/state-plugin/apps"
 const jsFiles = Data.readDirRecursive(appsPath, "js", "events")
